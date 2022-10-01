@@ -1,0 +1,17 @@
+# jabra-busylight.service
+# Wed Sep 14 02:17:36 EDT 2022
+
+[Unit]
+Description=Jabra Busylight
+Wants=network-online.target
+After=network-online.target
+After=suspend.target
+
+[Service]
+Restart=on-failure
+TimeoutStopSec=70
+Environment="LD_LIBRARY_PATH=%h/bin/jabra-busylight"
+ExecStart=%h/bin/jabra-busylight/jabra-busylight
+
+[Install]
+WantedBy=default.target

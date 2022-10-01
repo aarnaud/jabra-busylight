@@ -8,6 +8,11 @@ This service watch every 5s the status of pulseaudio source link to Jabra headse
 - `systemd` to start the service 
 - `jabra-sdk-linux` The linux Jabra SDK [here](https://developer.jabra.com/site/global/sdk/linux/index.gsp)
 
+```shell
+sudo cp udev/99-jabra.rules /etc/udev/rules.d/99-jabra.rules
+sudo udevadm control --reload
+```
+
 ## Build 
 
 ```shell

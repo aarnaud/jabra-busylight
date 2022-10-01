@@ -96,9 +96,9 @@ func addDevice(device *DeviceInfo) {
 
 func removeDevice(device *DeviceInfo) {
 	deviceListLock.Lock()
-	delete(deviceList, device.DeviceID)
-	if device.SerialNumber == mainDevice.SerialNumber {
+	if mainDevice != nil && device.SerialNumber == mainDevice.SerialNumber {
 		mainDevice = nil
 	}
+	delete(deviceList, device.DeviceID)
 	defer deviceListLock.Unlock()
 }

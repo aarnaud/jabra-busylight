@@ -1,11 +1,10 @@
 # Jabra busy light for Linux
 
-This service watch every 5s the status of pulseaudio source link to Jabra headset, when the source became active the busy light is enable.
+This service connects to the Jabra and when it became active (audio is emitted) the busy light is enable.
 
 ## Dependencies
 
-- `pulseaudio` to detect the state of microphone
-- `systemd` to start the service 
+- `systemd` to start the service
 - `jabra-sdk-linux` The linux Jabra SDK [here](https://developer.jabra.com/site/global/sdk/linux/index.gsp)
 
 ```shell
@@ -13,13 +12,13 @@ sudo cp udev/99-jabra.rules /etc/udev/rules.d/99-jabra.rules
 sudo udevadm control --reload
 ```
 
-## Build 
+## Build
 
 ```shell
 CGO_LDFLAGS="-Ljabra-sdk-linux_1.12.2.0/JabraLibLinux/library/ubuntu/64-bit" go build
 ```
 
-## Test 
+## Test
 
 ```shell
 LD_LIBRARY_PATH=jabra-sdk-linux_1.12.2.0/JabraLibLinux/library/ubuntu/64-bit ./jabra-busylight

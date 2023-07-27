@@ -9,6 +9,7 @@ package main
 extern void goFirstscanfordevicesdonefunc(void);
 extern void goDeviceattachedfunc(Jabra_DeviceInfo deviceInfo);
 extern void goDeviceremovedfunc(unsigned short deviceID);
+extern void goButtonindatarawhidfunc(unsigned short deviceID, unsigned short usagePage, unsigned short usage, unsigned char buttonInData);
 
 __attribute__((weak))
 char* testC(char* val) {
@@ -17,8 +18,6 @@ char* testC(char* val) {
 */
 import "C"
 import (
-	"github.com/jfreymuth/pulse"
-	"github.com/jfreymuth/pulse/proto"
 	"log"
 	"sync"
 	"time"
@@ -30,27 +29,14 @@ var mainDevice *DeviceInfo
 
 func main() {
 	log.Println(C.GoString(C.testC(C.CString("testing C binding: this line must be print"))))
-	pulseClient, err := pulse.NewClient()
-	if err != nil {
-		log.Fatalln("failed to connect to pulseaudio server")
-	}
 
 	C.Jabra_SetAppID(C.CString("linux-busylight"))
-	init := C.Jabra_InitializeV2((*[0]byte)(C.goFirstscanfordevicesdonefunc), (*[0]byte)(C.goDeviceattachedfunc), (*[0]byte)(C.goDeviceremovedfunc), (*[0]byte)(nil), (*[0]byte)(nil), true, nil)
+	init := C.Jabra_InitializeV2((*[0]byte)(C.goFirstscanfordevicesdonefunc), (*[0]byte)(C.goDeviceattachedfunc), (*[0]byte)(C.goDeviceremovedfunc), (*[0]byte)(C.goButtonindatarawhidfunc), (*[0]byte)(nil), true, nil)
 	if !init {
 		log.Fatalln("failed to init jabra SDK")
 	}
-
 	for {
-		time.Sleep(5 * time.Second)
-		if mainDevice == nil {
-			continue
-		}
-		if isSourceOutputPresent(pulseClient) {
-			mainDevice.EnableBusylightStatus()
-		} else {
-			mainDevice.DisableBusylightStatus()
-		}
+		time.Sleep(60 * time.Second)
 	}
 }
 
@@ -75,14 +61,17 @@ func goDeviceremovedfunc(deviceid uint16) {
 	removeDevice(deviceList[deviceid])
 }
 
-func isSourceOutputPresent(client *pulse.Client) bool {
-	sourceOutputReq := proto.GetSourceOutputInfoList{}
-	sourceOutputReply := proto.GetSourceOutputInfoListReply{}
-	err := client.RawRequest(&sourceOutputReq, &sourceOutputReply)
-	if err != nil {
-		log.Println("error to get source-outputs")
+//export goButtonindatarawhidfunc
+func goButtonindatarawhidfunc(deviceid uint16, usagepage uint16, usage uint16, buttonindata bool) {
+	log.Println(deviceid, usagepage, usage, buttonindata)
+
+	if mainDevice != nil && usagepage == 0xff30 && usage == 0x002a {
+		if buttonindata {
+			mainDevice.EnableBusylightStatus()
+		} else {
+			mainDevice.DisableBusylightStatus()
+		}
 	}
-	return len(sourceOutputReply) > 0
 }
 
 func addDevice(device *DeviceInfo) {
